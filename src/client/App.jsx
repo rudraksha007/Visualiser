@@ -13,52 +13,6 @@ function App() {
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => setMic(stream))
       .catch(() => setMic(null));
-    const tr = new webkitSpeechRecognition();
-    console.log('herere');
-
-    tr.continuous = true;
-    tr.interimResults = true;
-    tr.lang = "en-US";
-    tr.onresult = (event) => {
-      var res = ''
-      console.log(event.results);
-
-      for (let i = 0; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          res += event.results[i][0].transcript;
-        }
-      }
-      console.log(res);
-      setResult(res);
-    };
-    tr.onend = () => {
-      // {
-      //   if (isRunning) {
-      //     setRunning(false);
-      //     setTranscriber(null);
-      //   }
-      //   console.log();
-      //   fetch('/prompt', {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json'
-      //     },
-      //     body: JSON.stringify({ transcript: result })
-      //   })
-      //   .then(response => response.json())
-      //   .then(data => {
-      //     setAns(data.answer);
-      //   })
-      //   .catch(error => {
-      //     console.error('Error:', error);
-      //   });
-      // }
-    };
-    tr.onerror = (event) => {
-      console.log(event.error);
-      setRunning(false);
-    }
-    setTranscriber(tr);
   }, []);
 
   useEffect(() => {
@@ -68,7 +22,6 @@ function App() {
     if (!mic) return;
     if (!isRunning) {
       console.log(result);
-
       createDefaultCircle(document.getElementById("canvas"));
       return;
     }
@@ -172,32 +125,32 @@ function App() {
       setResult(res);
     };
     tr.onend = () => {
-      // {
-      //   if (isRunning) {
-      //     setRunning(false);
-      //     setTranscriber(null);
-      //   }
-      //   console.log();
-      //   fetch('/prompt', {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json'
-      //     },
-      //     body: JSON.stringify({ transcript: result })
-      //   })
-      //   .then(response => response.json())
-      //   .then(data => {
-      //     setAns(data.answer);
-      //   })
-      //   .catch(error => {
-      //     console.error('Error:', error);
-      //   });
-      // }
+      {
+        if (isRunning) {
+          setRunning(false);
+          setTranscriber(null);
+        }
+        fetch('/prompt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ prompt: result })
+        })
+        .then(response => response.json())
+        .then(data => {
+          setAns(data.answer);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      }
     };
     tr.onerror = (event) => {
       console.log(event.error);
       setRunning(false);
     }
+    tr.start();
     setTranscriber(tr);
   }
   return (
@@ -211,7 +164,7 @@ function App() {
         {result}
       </p>
       <p className="absolute top-0 left-0 w-[35%] text-white text-center h-[80%] overflow-y-auto p-10">
-        { }
+        { ans}
       </p>
     </div>
   )
